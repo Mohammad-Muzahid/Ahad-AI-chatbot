@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ahad AI Assistant - Multilingual</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #8b5cf6;
+            --secondary: #1e293b;
+            --secondary-dark: #0f172a;
+            --secondary-light: #334155;
+            --accent: #06d6a0;
+            --accent-dark: #05b384;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --glass: rgba(30, 41, 59, 0.6);
+            --glass-dark: rgba(15, 23, 42, 0.8);
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            --gradient-card: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--gradient-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--secondary-light);
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon i {
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--gradient-card);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-header {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--secondary-light);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.offline {
+            background: var(--error);
+        }
+
+        .status-dot.connecting {
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 60vh;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .ahad-message {
+            align-self: flex-start;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+
+        /* Language indicator */
+        .language-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        /* File Attachment Styles */
+        .message-files {
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .file-attachment {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-attachment:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        .upload-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-item {
+            position: relative;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+            padding: 0.5rem;
+            max-width: 150px;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-bottom: 0.25rem;
+        }
+
+        .remove-preview {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--error);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            align-self: flex-start;
+            max-width: 100px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .input-container {
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid var(--secondary-light);
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .input-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            font-family: inherit;
+        }
+
+        .message-input:focus {
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
+
+        .message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.active {
+            background: var(--gradient-primary);
+            border-color: var(--primary);
+        }
+
+        .action-btn[data-action="send"] {
+            background: var(--gradient-primary);
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+
+        .action-btn[data-action="send"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--primary-light);
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .upload-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .upload-progress {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .upload-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .upload-option {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-option:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .upload-option i {
+            font-size: 2rem;
+            color: var(--primary-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-option span {
+            display: block;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--gradient-card);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .languages {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .lang-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+
+        .lang-btn.active {
+            background: var(--gradient-primary);
+            border-color: var(--primary);
+        }
+
+        .lang-name {
+            font-size: 0.85rem;
+        }
+
+        .lang-code {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .feature:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .feature i {
+            font-size: 1.25rem;
+            color: var(--primary-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .commands {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .command {
+            padding: 0.75rem;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .command:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateX(5px);
+        }
+
+        .command-title {
+            font-weight: bold;
+            color: var(--primary-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .command-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--secondary-light);
+            background: var(--glass-dark);
+        }
+
+        .connection-status {
+            padding: 0.5rem;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .connection-status.connected {
+            color: var(--success);
+        }
+
+        .connection-status.disconnected {
+            color: var(--error);
+        }
+
+        .connection-status.connecting {
+            color: var(--warning);
+        }
+
+        /* Language-specific input placeholders */
+        .message-input[data-lang="hi"]::placeholder {
+            font-family: 'Segoe UI', 'Arial', 'Noto Sans Devanagari', sans-serif;
+        }
+        
+        .message-input[data-lang="ar"]::placeholder {
+            font-family: 'Segoe UI', 'Arial', 'Noto Sans Arabic', sans-serif;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .message-input[data-lang="te"]::placeholder {
+            font-family: 'Segoe UI', 'Arial', 'Noto Sans Telugu', sans-serif;
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .chat-messages {
+                max-height: 50vh;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .input-actions {
+                flex-wrap: wrap;
+            }
+            
+            .upload-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Ahad AI Assistant</h1>
+                    <div class="status-indicator">
+                        <div class="status-dot connecting" id="statusDot"></div>
+                        <span id="statusText">Connecting...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="action-btn" id="micBtn" title="Voice Input">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="action-btn" id="speakBtn" title="Text to Speech">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button class="action-btn" id="clearBtn" title="Clear Chat">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main class="chat-container">
+            <div class="chat-header">
+                <div class="connection-status connecting" id="connectionStatus">
+                    Connecting to backend...
+                </div>
+                <div class="upload-stats" id="uploadStats">
+                    <span id="uploadCount">0 files ready</span>
+                    <span class="language-indicator" id="currentLangIndicator">
+                        <i class="fas fa-language"></i> English
+                    </span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ahad-message">
+                    <div class="message-header">
+                        <i class="fas fa-robot"></i>
+                        <span>Ahad AI</span>
+                        <span class="language-indicator">
+                            <i class="fas fa-language"></i> EN
+                        </span>
+                    </div>
+                    Hello! I'm Ahad AI, your multilingual assistant. I can communicate in English, Hindi, Arabic, and Telugu. Select your preferred language from the sidebar and start chatting!
+                    <div class="message-time" id="initialTime"></div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-area">
+                    <!-- File preview area -->
+                    <div class="upload-preview" id="uploadPreview"></div>
+                    
+                    <textarea class="message-input" id="messageInput" 
+                             placeholder="Type your message here... You can also attach files or images by clicking the 📎 button."
+                             autocomplete="off" data-lang="en"></textarea>
+                </div>
+                
+                <div class="input-actions">
+                    <button class="action-btn" id="fileBtn" title="Attach files (Ctrl+F)">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="action-btn" id="imageBtn" title="Upload image (Ctrl+I)">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="action-btn" data-action="send" id="sendButton" title="Send message (Enter)">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="card">
+                <h3><i class="fas fa-globe"></i> Select Language</h3>
+                <div class="languages">
+                    <button class="lang-btn active" data-lang="en" data-name="English">
+                        <div class="lang-name">English</div>
+                        <div class="lang-code">EN</div>
+                    </button>
+                    <button class="lang-btn" data-lang="hi" data-name="Hindi">
+                        <div class="lang-name">हिन्दी</div>
+                        <div class="lang-code">HI</div>
+                    </button>
+                    <button class="lang-btn" data-lang="ar" data-name="Arabic">
+                        <div class="lang-name">العربية</div>
+                        <div class="lang-code">AR</div>
+                    </button>
+                    <button class="lang-btn" data-lang="te" data-name="Telugu">
+                        <div class="lang-name">తెలుగు</div>
+                        <div class="lang-code">TE</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-cogs"></i> AI Features</h3>
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-microphone-alt"></i>
+                        <span>Voice Input</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-brain"></i>
+                        <span>AI Chat</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-language"></i>
+                        <span>4 Languages</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-file-upload"></i>
+                        <span>File Analysis</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-database"></i>
+                        <span>RAG Search</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-history"></i>
+                        <span>Memory</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-terminal"></i> Quick Commands</h3>
+                <div class="commands">
+                    <div class="command" onclick="insertCommand('Translate this to Hindi: Hello, how are you?')">
+                        <div class="command-title">Translate</div>
+                        <div class="command-desc">Translate text between languages</div>
+                    </div>
+                    <div class="command" onclick="insertCommand('Analyze this document...')">
+                        <div class="command-title">Analyze File</div>
+                        <div class="command-desc">Upload and analyze any file</div>
+                    </div>
+                    <div class="command" onclick="insertCommand('What is in this image?')">
+                        <div class="command-title">Image Analysis</div>
+                        <div class="command-desc">Describe image content</div>
+                    </div>
+                    <div class="command" onclick="insertCommand('Search my documents for...')">
+                        <div class="command-title">Search Files</div>
+                        <div class="command-desc">Search uploaded content</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-info-circle"></i> Supported Files</h3>
+                <div class="commands">
+                    <div class="command">
+                        <div class="command-title">📄 Documents</div>
+                        <div class="command-desc">PDF, DOC, TXT, PPT, CSV</div>
+                    </div>
+                    <div class="command">
+                        <div class="command-title">🖼️ Images</div>
+                        <div class="command-desc">JPG, PNG, GIF, WebP</div>
+                    </div>
+                    <div class="command">
+                        <div class="command-title">💬 Text Files</div>
+                        <div class="command-desc">JSON, XML, MD, RTF</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- File Upload Modal -->
+    <div class="modal-overlay" id="fileUploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cloud-upload-alt"></i> Upload Files</h3>
+                <button class="close-modal" id="closeFileModal">&times;</button>
+            </div>
+            
+            <div class="upload-zone" id="dropZone">
+                <div class="upload-icon">
+                    <i class="fas fa-file-upload"></i>
+                </div>
+                <div class="upload-text">Drag & drop files here</div>
+                <div class="upload-subtext">or click to browse</div>
+                <input type="file" id="fileInput" multiple style="display: none;" 
+                       accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.csv,.json,.xml">
+                
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+            
+            <div class="upload-options">
+                <div class="upload-option" onclick="selectFileType('document')">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Documents</span>
+                </div>
+                <div class="upload-option" onclick="selectFileType('image')">
+                    <i class="fas fa-image"></i>
+                    <span>Images</span>
+                </div>
+                <div class="upload-option" onclick="selectFileType('all')">
+                    <i class="fas fa-folder-open"></i>
+                    <span>All Files</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        Ahad AI Assistant | Advanced Multilingual AI with File Upload & RAG
+    </footer>
+
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const micBtn = document.getElementById('micBtn');
+        const speakBtn = document.getElementById('speakBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const fileBtn = document.getElementById('fileBtn');
+        const imageBtn = document.getElementById('imageBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const langButtons = document.querySelectorAll('.lang-btn');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const uploadCount = document.getElementById('uploadCount');
+        const currentLangIndicator = document.getElementById('currentLangIndicator');
+        const fileUploadModal = document.getElementById('fileUploadModal');
+        const closeFileModal = document.getElementById('closeFileModal');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        // Configuration
+        const BACKEND_URL = 'http://localhost:3000';
+        let currentLanguage = 'en';
+        let currentLanguageName = 'English';
+        let backendConnected = false;
+        
+        // Session management
+        let sessionId = localStorage.getItem('ahad_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('ahad_session_id', sessionId);
+        }
+        
+        let uploadedFiles = [];
+        let isUploading = false;
+        let isProcessingMessage = false;
+
+        console.log('Session ID:', sessionId);
+        console.log('Current language:', currentLanguage);
+
+        // Language configuration
+        const languageConfig = {
+            'en': {
+                name: 'English',
+                code: 'EN',
+                placeholder: 'Type your message here... You can also attach files or images by clicking the 📎 button.',
+                ttsLang: 'en-US',
+                greeting: 'Hello! I\'m Ahad AI, your multilingual assistant. How can I help you today?',
+                commands: {
+                    analyze: 'Analyze this document...',
+                    describe: 'Describe this image...',
+                    search: 'Search my documents for...'
+                }
+            },
+            'hi': {
+                name: 'Hindi',
+                code: 'HI',
+                placeholder: 'अपना संदेश यहाँ टाइप करें... आप 📎 बटन पर क्लिक करके फ़ाइलें या छवियाँ भी संलग्न कर सकते हैं।',
+                ttsLang: 'hi-IN',
+                greeting: 'नमस्ते! मैं आहद AI हूं, आपका बहुभाषी सहायक। आज मैं आपकी कैसे सहायता कर सकता हूं?',
+                commands: {
+                    analyze: 'इस दस्तावेज़ का विश्लेषण करें...',
+                    describe: 'इस छवि का वर्णन करें...',
+                    search: 'मेरे दस्तावेज़ों में खोजें...'
+                }
+            },
+            'ar': {
+                name: 'Arabic',
+                code: 'AR',
+                placeholder: 'اكتب رسالتك هنا... يمكنك أيضًا إرفاق الملفات أو الصور بالنقر على زر 📎.',
+                ttsLang: 'ar-SA',
+                greeting: 'مرحبًا! أنا آحاد AI، مساعدك متعدد اللغات. كيف يمكنني مساعدتك اليوم؟',
+                commands: {
+                    analyze: 'حلل هذا المستند...',
+                    describe: 'صف هذه الصورة...',
+                    search: 'ابحث في مستنداتي عن...'
+                }
+            },
+            'te': {
+                name: 'Telugu',
+                code: 'TE',
+                placeholder: 'మీ సందేశాన్ని ఇక్కడ టైప్ చేయండి... మీరు 📎 బటన్‌ను క్లిక్ చేయడం ద్వారా ఫైళ్లు లేదా చిత్రాలను కూడా అటాచ్ చేయవచ్చు.',
+                ttsLang: 'te-IN',
+                greeting: 'హలో! నేను ఆహద్ AI, మీ బహుభాషా సహాయకుడు. నేను ఈరోజు మీకు ఎలా సహాయం చేయగలను?',
+                commands: {
+                    analyze: 'ఈ డాక్యుమెంట్‌ని విశ్లేషించండి...',
+                    describe: 'ఈ చిత్రాన్ని వివరించండి...',
+                    search: 'నా డాక్యుమెంట్‌ల్లో శోధించండి...'
+                }
+            }
+        };
+
+        // Initialize
+        document.getElementById('initialTime').textContent = getCurrentTime();
+        messageInput.focus();
+        updateLanguageIndicator();
+
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'f':
+                        e.preventDefault();
+                        openFileModal();
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        selectFileType('image');
+                        break;
+                    case 'l':
+                        e.preventDefault();
+                        cycleLanguage();
+                        break;
+                    case 'enter':
+                        e.preventDefault();
+                        sendMessage();
+                        break;
+                }
+            }
+        });
+
+        micBtn.addEventListener('click', toggleVoiceInput);
+        speakBtn.addEventListener('click', speakLastMessage);
+        clearBtn.addEventListener('click', clearChat);
+        fileBtn.addEventListener('click', openFileModal);
+        imageBtn.addEventListener('click', () => selectFileType('image'));
+
+        // Language selection
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+                const langName = btn.dataset.name;
+                setLanguage(lang, langName);
+            });
+        });
+
+        // Modal handlers
+        closeFileModal.addEventListener('click', closeFileModalFunc);
+        fileUploadModal.addEventListener('click', (e) => {
+            if (e.target === fileUploadModal) closeFileModalFunc();
+        });
+
+        // File upload handlers
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFileDrop(e.dataTransfer.files);
+        });
+
+        // Initialize backend connection
+        checkBackendConnection();
+
+        // Language Functions
+        function setLanguage(lang, langName) {
+            if (currentLanguage === lang) return;
+            
+            langButtons.forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+            
+            // Update current language
+            currentLanguage = lang;
+            currentLanguageName = langName;
+            
+            // Update UI
+            messageInput.placeholder = languageConfig[lang].placeholder;
+            messageInput.setAttribute('data-lang', lang);
+            
+            // Update language indicator
+            updateLanguageIndicator();
+            
+            // Update TTS language
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel(); // Stop any ongoing speech
+            }
+            
+            // Add language change message
+            addMessage(`🌐 Language switched to ${langName} (${lang.toUpperCase()}). You can now chat in ${langName}.`, 'ahad');
+            
+            // Update commands in sidebar
+            updateCommandsForLanguage(lang);
+            
+            console.log('Language set to:', lang, langName);
+        }
+
+        function cycleLanguage() {
+            const languages = ['en', 'hi', 'ar', 'te'];
+            const currentIndex = languages.indexOf(currentLanguage);
+            const nextIndex = (currentIndex + 1) % languages.length;
+            const nextLang = languages[nextIndex];
+            const nextLangName = languageConfig[nextLang].name;
+            
+            setLanguage(nextLang, nextLangName);
+        }
+
+        function updateLanguageIndicator() {
+            const lang = languageConfig[currentLanguage];
+            currentLangIndicator.innerHTML = `<i class="fas fa-language"></i> ${lang.name} (${lang.code})`;
+        }
+
+        function updateCommandsForLanguage(lang) {
+            const commands = languageConfig[lang].commands;
+            const commandElements = document.querySelectorAll('.command');
+            
+            if (commandElements.length >= 3) {
+                commandElements[0].querySelector('.command-desc').textContent = commands.analyze;
+                commandElements[1].querySelector('.command-desc').textContent = commands.describe;
+                commandElements[2].querySelector('.command-desc').textContent = commands.search;
+            }
+        }
+
+        // Core Functions
+        async function sendMessage() {
+            if (isProcessingMessage) {
+                console.log('Already processing a message, please wait...');
+                return;
+            }
+            
+            const message = messageInput.value.trim();
+            const files = uploadedFiles;
+            
+            if (!message && files.length === 0) {
+                messageInput.focus();
+                return;
+            }
+
+            isProcessingMessage = true;
+            
+            // Clear input immediately
+            messageInput.value = '';
+            
+            // Add user message with files ABOVE the message text
+            if (message || files.length > 0) {
+                addMessageWithFiles(message, files, 'user');
+            }
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                let response;
+                
+                if (backendConnected) {
+                    response = await sendToBackend(message, files);
+                } else {
+                    response = getLocalResponse(message, files);
+                }
+
+                hideTypingIndicator();
+                
+                if (response.success) {
+                    addMessage(response.text, 'ahad', response.language || currentLanguage);
+                    
+                    // Show file analysis results if available
+                    if (response.files && response.files.length > 0) {
+                        addFileAnalysisResults(response.files);
+                    }
+                    
+                    if (response.shouldSpeak !== false && message) {
+                        speakText(response.text, response.language || currentLanguage);
+                    }
+                } else {
+                    addMessage(`Error: ${response.error || 'Unknown error'}`, 'ahad');
+                    console.error('Backend error:', response.error);
+                }
+
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage("I encountered an error. Please try again.", 'ahad');
+                console.error('Send message error:', error);
+            } finally {
+                // Clear uploaded files after sending
+                if (files.length > 0) {
+                    uploadedFiles = [];
+                    updateUploadPreview();
+                }
+                isProcessingMessage = false;
+            }
+        }
+
+        async function sendToBackend(message, files) {
+            try {
+                const formData = new FormData();
+                formData.append('message', message);
+                formData.append('language', currentLanguage);
+                formData.append('sessionId', sessionId);
+                formData.append('useRAG', 'true');
+                formData.append('analyzeSentiment', 'true');
+
+                // Add files if any
+                if (files.length > 0) {
+                    files.forEach((file) => {
+                        formData.append('files', file);
+                    });
+                }
+
+                console.log('Sending to backend:', {
+                    message,
+                    language: currentLanguage,
+                    sessionId,
+                    files: files.length
+                });
+
+                const response = await fetch(`${BACKEND_URL}/api/chat`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('Backend response:', result);
+                
+                // Update session ID if returned from server
+                if (result.sessionId) {
+                    sessionId = result.sessionId;
+                    localStorage.setItem('ahad_session_id', sessionId);
+                }
+                
+                return result;
+                
+            } catch (error) {
+                console.error('Backend error:', error);
+                backendConnected = false;
+                updateConnectionStatus(false);
+                return {
+                    success: false,
+                    error: error.message,
+                    text: getLocalResponse(message, files).text
+                };
+            }
+        }
+
+        function getLocalResponse(message, files) {
+            const lang = languageConfig[currentLanguage];
+            let text = '';
+            
+            if (message) {
+                text = `${lang.greeting}\n\nYou asked: "${message}"\n\n`;
+            } else {
+                text = lang.greeting + '\n\n';
+            }
+            
+            if (files.length > 0) {
+                text += `📁 I see you uploaded ${files.length} file(s):\n`;
+                files.forEach((file, index) => {
+                    text += `• ${file.name} (${formatFileSize(file.size)})\n`;
+                });
+                text += "\nFor full file analysis, please ensure the backend is running.";
+            }
+
+            return {
+                success: true,
+                text,
+                shouldSpeak: true,
+                sources: ['local_fallback']
+            };
+        }
+
+        // Message Functions
+        function addMessageWithFiles(message, files, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            let content = '';
+            
+            // Add files ABOVE the message
+            if (files.length > 0) {
+                content += '<div class="message-files">';
+                content += '<div style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem;">📎 Attached files:</div>';
+                
+                files.forEach(file => {
+                    content += `
+                        <div class="file-attachment">
+                            <div class="file-icon">
+                                ${file.type.startsWith('image/') ? '<i class="fas fa-image"></i>' : '<i class="fas fa-file"></i>'}
+                            </div>
+                            <div class="file-info">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${formatFileSize(file.size)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                content += '</div>';
+            }
+            
+            // Add message header with language indicator
+            const header = sender === 'user' ? `
+                <div class="message-header">
+                    <i class="fas fa-user"></i>
+                    <span>You</span>
+                    <span class="language-indicator">
+                        <i class="fas fa-language"></i> ${languageConfig[currentLanguage].code}
+                    </span>
+                </div>
+            ` : '';
+            
+            content += header;
+            
+            // Add message text if exists
+            if (message && message.trim()) {
+                content += `<div style="margin-top: ${files.length > 0 ? '0.75rem' : '0'}">${message}</div>`;
+            } else if (files.length > 0) {
+                content += `<div style="margin-top: 0.75rem; color: var(--text-secondary);">
+                    <i class="fas fa-paperclip"></i> Files uploaded for analysis
+                </div>`;
+            }
+            
+            content += `<div class="message-time">${getCurrentTime()}</div>`;
+            
+            messageDiv.innerHTML = content;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addMessage(text, sender, lang = currentLanguage) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const langConfig = languageConfig[lang] || languageConfig['en'];
+            
+            const header = sender === 'ahad' ? `
+                <div class="message-header">
+                    <i class="fas fa-robot"></i>
+                    <span>Ahad AI</span>
+                    <span class="language-indicator">
+                        <i class="fas fa-language"></i> ${langConfig.code}
+                    </span>
+                </div>
+            ` : '';
+
+            messageDiv.innerHTML = `
+                ${header}
+                ${text}
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addFileAnalysisResults(files) {
+            const messages = document.querySelectorAll('.ahad-message');
+            if (messages.length === 0) return;
+            
+            const lastMessage = messages[messages.length - 1];
+            
+            const analysisDiv = document.createElement('div');
+            analysisDiv.className = 'message-files';
+            analysisDiv.style.marginTop = '1rem';
+            analysisDiv.style.background = 'rgba(15, 23, 42, 0.7)';
+            
+            let content = `<div style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem;">
+                <i class="fas fa-file-alt"></i> File Analysis:
+            </div>`;
+            
+            files.forEach(file => {
+                const statusIcon = file.extracted ? '✓' : '⚠️';
+                const statusColor = file.extracted ? 'var(--success)' : 'var(--warning)';
+                const statusText = file.extracted ? 'Analyzed successfully' : 'Could not extract content';
+                
+                content += `<div style="margin-bottom: 0.25rem; font-size: 0.85rem;">
+                    <span style="color: var(--text-secondary);">${file.filename}:</span>
+                    <span style="color: ${statusColor}; margin-left: 0.5rem;">
+                        ${statusIcon} ${statusText}
+                    </span>
+                </div>`;
+            });
+            
+            analysisDiv.innerHTML = content;
+            lastMessage.appendChild(analysisDiv);
+        }
+
+        // File Upload Functions
+        function openFileModal() {
+            fileUploadModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFileModalFunc() {
+            fileUploadModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function selectFileType(type) {
+            let accept = '';
+            switch(type) {
+                case 'document':
+                    accept = '.pdf,.doc,.docx,.txt,.ppt,.pptx,.csv,.json,.xml';
+                    break;
+                case 'image':
+                    accept = '.jpg,.jpeg,.png,.gif,.webp,.bmp';
+                    break;
+                default:
+                    accept = '';
+            }
+            fileInput.accept = accept;
+            fileInput.click();
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            handleFiles(files);
+            fileInput.value = '';
+            closeFileModalFunc();
+        }
+
+        function handleFileDrop(files) {
+            handleFiles(Array.from(files));
+            closeFileModalFunc();
+        }
+
+        async function handleFiles(files) {
+            if (isUploading) return;
+            
+            isUploading = true;
+            uploadProgress.style.display = 'block';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Update progress
+                const progress = ((i + 1) / files.length) * 100;
+                progressFill.style.width = `${progress}%`;
+                progressText.textContent = `Uploading ${i + 1} of ${files.length} files...`;
+                
+                // Validate file
+                if (!validateFile(file)) continue;
+                
+                // Add to uploaded files
+                uploadedFiles.push(file);
+                
+                // Show preview
+                await showFilePreview(file);
+                
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            // Reset progress
+            isUploading = false;
+            uploadProgress.style.display = 'none';
+            progressFill.style.width = '0%';
+            progressText.textContent = '0%';
+            
+            // Update UI
+            updateUploadPreview();
+            closeFileModalFunc();
+        }
+
+        function validateFile(file) {
+            const maxSize = 10 * 1024 * 1024;
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'text/plain',
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'text/csv',
+                'application/json',
+                'application/xml'
+            ];
+            
+            if (file.size > maxSize) {
+                alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+                return false;
+            }
+            
+            if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt|jpg|jpeg|png|gif|csv|json|xml)$/i)) {
+                alert(`File type not supported: ${file.name}`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        async function showFilePreview(file) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                previewItem.appendChild(img);
+            } else {
+                previewItem.innerHTML = `<i class="fas fa-file" style="font-size: 1.5rem; color: var(--primary-light); margin: 0.5rem 0;"></i>`;
+            }
+            
+            const fileName = document.createElement('div');
+            fileName.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+            fileName.style.fontSize = '0.75rem';
+            fileName.style.color = 'var(--text-secondary)';
+            fileName.style.textAlign = 'center';
+            previewItem.appendChild(fileName);
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-preview';
+            removeBtn.innerHTML = '×';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                const index = uploadedFiles.indexOf(file);
+                if (index > -1) {
+                    uploadedFiles.splice(index, 1);
+                    updateUploadPreview();
+                }
+                previewItem.remove();
+            };
+            previewItem.appendChild(removeBtn);
+            
+            uploadPreview.appendChild(previewItem);
+        }
+
+        function updateUploadPreview() {
+            if (uploadedFiles.length === 0) {
+                uploadPreview.style.display = 'none';
+                uploadCount.textContent = '0 files ready';
+            } else {
+                uploadPreview.style.display = 'flex';
+                uploadCount.textContent = `${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''} ready`;
+            }
+        }
+
+        // Utility Functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+
+        function insertCommand(command) {
+            messageInput.value = command;
+            messageInput.focus();
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        // Clear chat function
+        function clearChat() {
+            if (confirm('Clear all chat history and start fresh?')) {
+                chatMessages.innerHTML = '';
+                addMessage(languageConfig[currentLanguage].greeting, 'ahad');
+                console.log('Chat cleared');
+            }
+        }
+
+        // Backend connection
+        async function checkBackendConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                if (response.ok) {
+                    backendConnected = true;
+                    updateConnectionStatus(true);
+                    addMessage("✅ Connected to Ahad AI backend with Multilingual + File Upload!", 'ahad');
+                } else {
+                    throw new Error('Backend not responding');
+                }
+            } catch (error) {
+                backendConnected = false;
+                updateConnectionStatus(false);
+                console.log('Backend offline, using local mode');
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            if (connected) {
+                statusDot.className = 'status-dot';
+                statusDot.style.background = 'var(--success)';
+                statusText.textContent = 'Connected';
+                connectionStatus.textContent = '✅ Connected to backend';
+                connectionStatus.className = 'connection-status connected';
+            } else {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'Offline';
+                connectionStatus.textContent = '⚠️ Backend offline - using local mode';
+                connectionStatus.className = 'connection-status disconnected';
+            }
+        }
+
+        // Voice functions
+        let recognition = null;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = languageConfig[currentLanguage].ttsLang;
+            
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+                messageInput.value = transcript;
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                alert('Speech recognition not supported in this browser');
+                return;
+            }
+
+            recognition.lang = languageConfig[currentLanguage].ttsLang;
+
+            if (micBtn.classList.contains('active')) {
+                recognition.stop();
+                micBtn.classList.remove('active');
+            } else {
+                recognition.start();
+                micBtn.classList.add('active');
+            }
+        }
+
+        function speakText(text, lang = currentLanguage) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = languageConfig[lang].ttsLang;
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function speakLastMessage() {
+            const messages = chatMessages.querySelectorAll('.ahad-message');
+            if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                const text = lastMessage.textContent || lastMessage.innerText;
+                speakText(text.replace(/Ahad AI.*?\n/, '').trim());
+            }
+        }
+
+        // Auto-reconnect every 30 seconds if disconnected
+        setInterval(() => {
+            if (!backendConnected) {
+                checkBackendConnection();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
